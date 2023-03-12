@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
-const getToken = require("../../utils");
+const { getToken } = require("../../utils");
 
 const getAllUsers = async (req, res, next) => {
   try {
@@ -62,17 +62,17 @@ const login = async (req, res, next) => {
     await User.findByIdAndUpdate(user._id, { $push: { token: signed } });
 
     res.json({
-      message: "login successfully",
+      message: "Login successfully",
       user,
       token: signed,
     });
   })(req, res, next);
 };
 
-const logout = (req, res, next) => {
+const logout = async (req, res, next) => {
   let token = getToken(req);
 
-  let user = User.findOne({ token: { $in: [token] } }, { $pull: { token: token } }, { useFindAndModify: false });
+  let user = await User.findOneAndUpdate({ token: { $in: [token] } }, { $pull: { token: token } }, { useFindAndModify: false });
 
   if (!token || !user) {
     res.json({
