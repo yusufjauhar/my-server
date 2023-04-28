@@ -17,9 +17,9 @@ const store = async (req, res, next) => {
     let address = await DeliveryAddress.findById(delivery_address);
     let order = new Order({
       _id: new Types.ObjectId(),
-      status: "waiting payment",
+      status: "waiting_payment",
       delivery_fee: delivery_fee,
-      delivery_Address: {
+      delivery_address: {
         provinsi: address.provinsi,
         kabupaten: address.kabupaten,
         kecamatan: address.kecamatan,
@@ -28,7 +28,7 @@ const store = async (req, res, next) => {
       },
       user: req.user._id,
     });
-    let orderItems = await Orderitem.insertMany(
+    let orderItems = await OrderItems.insertMany(
       items.map((item) => ({
         ...item,
         name: item.product.name,
@@ -38,7 +38,7 @@ const store = async (req, res, next) => {
         product: item.product._id,
       }))
     );
-    orderItems.foreach((item) => order.order_items.push(item));
+    orderItems.forEach((item) => order.order_items.push(item));
     order.save();
     await Cartitem.deleteMany({ user: req.user._id });
     return res.json(order);
