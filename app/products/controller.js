@@ -21,6 +21,7 @@ const store = async (req, res, next) => {
         delete payload.category;
       }
     }
+
     if (payload.tags && payload.length > 0) {
       let tags = await Tag.findOne({ name: { $in: payload.tags } });
       if (tags) {
@@ -164,43 +165,87 @@ const update = async (req, res, next) => {
   }
 };
 
+// const index = async (req, res, next) => {
+//   try {
+//     // console.log(product);
+//     let { skip = 0, limit = 10, q = "", category = "", tag = [] } = req.query;
+
+//     let criteria = {};
+
+//     if (q.length > 0) {
+//       criteria = {
+//         ...criteria,
+//         name: { $regex: `${q}`, $options: "i" },
+//       };
+//     }
+
+//     if (category.length > 0) {
+//       let categoryResult = await Category.findOne({ name: { $regex: `${category}`, $options: "i" } });
+
+//       if (categoryResult) {
+//         criteria = { ...criteria, category: categoryResult._id };
+//       }
+//     }
+
+//     if (tag.length > 0) {
+//       tag = tag.split(",");
+//       let tagsResult = await Tag.find({ name: { $in: tag } });
+//       if (tagsResult.length > 0) {
+//         criteria = { ...criteria, tags: { $in: tagsResult.map((tag) => tag._id) } };
+//       }
+//     }
+
+//     let count = await Product.find().countDocuments();
+
+//     let product = await Product.find(criteria).skip(parseInt(skip)).limit(parseInt(limit)).populate("category").populate("tags");
+//     return res.json({
+//       data: product,
+//       count,
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
 const index = async (req, res, next) => {
   try {
-    // console.log(product);
-    let { skip = 0, limit = 10, q = "", category = "", tags = [] } = req.query;
+    let { page = 1, q = "", category = "", tag = [] } = req.query;
+
+    const limit = 12;
+    const skip = (page - 1) * limit;
 
     let criteria = {};
 
-    if (q.length) {
+    if (q.length > 0) {
       criteria = {
         ...criteria,
-        name: { $regex: "${q}", $options: "i" },
+        name: { $regex: `${q}`, $options: "i" },
       };
     }
 
-    if (category.length) {
-      let categoryResult = await Category.findOne({ name: { $regex: "${category}", $options: "i" } });
+    if (category.length > 0) {
+      let categoryResult = await Category.findOne({ name: { $regex: `${category}`, $options: "i" } });
 
       if (categoryResult) {
         criteria = { ...criteria, category: categoryResult._id };
       }
     }
 
-    if (tags.length) {
-      let tagsResult = await Tag.find({ name: { $in: tags } });
+    if (tag.length > 0) {
+      tag = tag.split(",");
+      let tagsResult = await Tag.find({ name: { $in: tag } });
       if (tagsResult.length > 0) {
         criteria = { ...criteria, tags: { $in: tagsResult.map((tag) => tag._id) } };
       }
     }
 
-    // console.log(criteria);
+    let count = await Product.find(criteria).countDocuments();
 
-    let count = await Product.find().countDocuments();
+    let products = await Product.find(criteria).skip(skip).limit(limit).populate("category").populate("tags");
 
-    let product = await Product.find(criteria).skip(parseInt(skip)).limit(parseInt(limit)).populate("category").populate("tags");
     return res.json({
-      data: product,
-      count,
+      data: products,
+      pages: Math.ceil(count / limit),
     });
   } catch (err) {
     next(err);

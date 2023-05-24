@@ -3,11 +3,11 @@ const CartItem = require("../cart-item/model");
 
 const update = async (req, res, next) => {
   try {
-    const { items } = req.body;
-    const productIds = items.map((item) => item.product._id);
+    const { cart } = req.body;
+    const productIds = cart.map((item) => item._id);
     const products = await Product.find({ _id: { $in: productIds } });
-    let cartItems = items.map((item) => {
-      let relatedProduct = products.find((product) => product._id.toString() === item.product._id);
+    let cartItems = cart.map((item) => {
+      let relatedProduct = products.find((product) => product._id.toString() === item._id);
       return {
         product: relatedProduct._id,
         price: relatedProduct.price,
@@ -20,14 +20,14 @@ const update = async (req, res, next) => {
 
     await CartItem.deleteMany({ user: req.user._id });
     await CartItem.bulkWrite(
-      cartItems.map((item) => {
+      cartItems.map((cartItem) => {
         return {
           updateOne: {
             filter: {
               user: req.user._id,
-              product: item.product,
+              product: cartItem.product,
             },
-            update: item,
+            update: cartItem,
             upsert: true,
           },
         };
@@ -36,7 +36,7 @@ const update = async (req, res, next) => {
 
     return res.json(cartItems);
   } catch (err) {
-    if (err && err.name == "ValidationError") {
+    if (err && err.name === "ValidationError") {
       return res.json({
         error: 1,
         message: err.message,
@@ -53,7 +53,7 @@ const index = async (req, res, next) => {
 
     return res.json(items);
   } catch (err) {
-    if (err && err.name == "ValidationError") {
+    if (err && err.name === "ValidationError") {
       return res.json({
         error: 1,
         message: err.message,
@@ -64,7 +64,4 @@ const index = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  update,
-  index,
-};
+module.exports = { update, index };

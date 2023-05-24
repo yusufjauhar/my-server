@@ -18,9 +18,10 @@ const deliveryAddressSchema = Schema(
       required: [true, "Nama kecamatan harus diisi"],
       maxlength: [255, "panjang maksimal nama kecamatan adalah 255 karakter"],
     },
-    kabupaten: {
+    kota: {
       type: String,
-      required: [true, "Nama kabupaten harus diisi"],
+      required: [true, "Nama kota harus diisi"],
+      // required: [true],
       maxlength: [255, "panjang maksimal nama kabupaten adalah 255 karakter"],
     },
     provinsi: {

@@ -13,7 +13,7 @@ const invoiceSchema = Schema(
     },
     delivery_address: {
       provinsi: { type: String, required: [true, "provinsi harus diisi"] },
-      kabupaten: { type: String, required: [true, "kabupaten harus diisi"] },
+      kabupaten: { type: String },
       kecamatan: { type: String, required: [true, "kecamatan harus diisi"] },
       kelurahan: { type: String, required: [true, "kelurahan harus diisi"] },
       detail: { type: String },
